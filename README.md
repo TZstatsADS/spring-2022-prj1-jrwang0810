@@ -14,6 +14,8 @@ Term: Spring 2022
 
 + Project summary: The project consists of two parts. The first part is about analysis of the whole corpus of Philosophy. It will bring you an overview of the whole corpus, and each schools it includes. The second part focuses on sentiment analysis of two interesting schools: Capitalism and Communism. Both parts utilizes multiple visualization methods. We can draw insights from different perspectives.
 
+Please look at *..doc/Philosophy data story.Rmd* for the project R markdown file; *..doc/Philosophy data story.nb.html* for the knitted html version.
+
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
 ```
