@@ -1,6 +1,8 @@
 ---
 title: "Investigating different schools of Philosophy--Capitalism vs. Communism"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 Do you know about Philosophy? If you read a lot about them, that's very cool. Hope you find this article helpful from the perspective of data analysis and visualization. If you are not very familiar with this subject (just as I am), don't worry. You will get the first impression on each main school of Philosophy. 
@@ -10,7 +12,7 @@ The first part of the data story is about analysis of the whole corpus of Philos
 # Part 1: Data set overview. Let's look at the whole curpus!
 
 ## Preparation
-### Setting up environment
+#### Setting up environment
 
 ```{r setup, warning=FALSE, message=FALSE,echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,7 +23,7 @@ This report is prepared with the following environmental settings.
 ```{r}
 print(R.version)
 ```
-### Load the packages and source files
+#### Load the packages and source files
 
 We don't need all the packages listed there. They covers the functionality from generating, cleaning the original data set, to data analysis, manipulation, visualization, and sentiment analysis etc.. We mainly focus on the latter part of the functions.
 
@@ -75,9 +77,9 @@ source("../lib/wordcloudFuncs.R")
 
 ```
 
-## Load the dataset
+#### Load the dataset
 
-The data set *../data/philosophy_data.csv* contains 360808 sentences taken from 51 texts spanning the history of philosophy. You can find more details about it in [https://www.kaggle.com/kouroshalizadeh/history-of-philosophy](https://www.kaggle.com/kouroshalizadeh/history-of-philosophy). 
+The data set *../data/philosophy_data.csv* contains 360808 sentences taken from 51 texts spanning 13 major schools of the history of philosophy. You can find more details about it in [https://www.kaggle.com/kouroshalizadeh/history-of-philosophy](https://www.kaggle.com/kouroshalizadeh/history-of-philosophy). 
 
 ```{r read data, warning=FALSE, message=FALSE}
 file<-'../data/philosophy_data.csv'
@@ -101,11 +103,11 @@ data <- reduced_data %>% filter(school == "capitalism" | school == "communism")
 ```
 
 
-## Task 1: Investigate the length of sentences of different schools?
+## Task 1: Investigate the length of sentences of different schools
 
-The word “philosophy” literally means the “love” (Philo in Greek) of “wisdom” (Sophia). As an outsider, I always think philosophy is a profound, opaque subject which is very challenging to learn. I believe that many peopel like me would presuppose that sentences in philosophy texts tend to be longer than usual sentences. Hence, let's begin by investigating the the length of sentences of different schools.
+The word “philosophy” literally means the “love” (Philo in Greek) of “wisdom” (Sophia). As an outsider, I always think philosophy is a profound, opaque subject which is very challenging to learn. I believe that many people like me would presuppose that sentences in philosophy texts tend to be longer than usual sentences. Hence, let's begin by investigating the the length of sentences of different schools.
 
-From this bar plot, we see that empiricism, capitalism, and german_idealism are the three schools with longest sentences(longer than 30 words)
+From this bar plot, we see that empiricism, capitalism, and german_idealism are the three schools with longest sentences(longer than 30 words); Nietzsche, analytic, plato are the three schools with relative short sentences(a big longer than 20 words). "In general, an average of 15 to 20 words is effective for most technical communication." --By James Scott. Hence, we see that even the school with shortest mean length of sentences still has mean length longer than usual written sentences' length.
 
 ```{r ,warning=FALSE, message=FALSE}
 data.byschool <- reduced_data %>% group_by(school) %>%
@@ -124,7 +126,7 @@ g1 <- data.byschool %>% ggplot(aes(x = reorder(school, meanlength), y = meanleng
 g1
 ```
 
-In addition to the mean length of sentences, this plot will show more details of actual distributon of sentence length.
+In addition to the mean length of sentences, this violin + box plot will show more details of actual distributions of sentence length. All the schools have outliers(black dots) on the right side of violin plot, which means they all have some very long sentences which might be abstruse or rigorous.
 
 ```{r, fig.width = 3, fig.height = 3}
 data.byschool <- reduced_data %>% group_by(school) 
@@ -146,17 +148,22 @@ g2
 
 
 
-# Step 1: What are the frequently mentioned words?
-Let's have an overview of frequency of words in the whole corpus.
+## Task 2: Investigate the frequently mentioned words
 
+What we did in task 1 would generally represents the shape and format of sentences in different schools. Now, let's dig into the contents and topics.
 
+Let's first have an overview of frequency of words in the whole corpus. A wordcloud would be an optimal method for word frequency visualization.
 
+#### Prepare corpus
+Put all the sentences(360808 observations) into a Large SimpleCorpus docs. 
 ```{r prepare corpus, warning=FALSE, message=FALSE,echo=FALSE}
 text <- full_data$sentence_lowered
 docs <- Corpus(VectorSource(text))
 ```
 
-```{r clean corpus and make dtm, warning=FALSE, message=FALSE,echo=FALSE}
+#### Clean corpus and make document-term-matrices
+**f.clean.corpus** cleans the docs by lowering sentences, removing numbers, punctuations, white spaces, common stop words in English, and an additional set of words rm_words which contains words of my choice. **f.make.tdm** makes the docs ready to make a wordcloud. See details in *../lib/wordcloudFuncs.R*.
+```{r clean corpus and make tdm, warning=FALSE, message=FALSE}
 rm_words = c('also', 'areas', 'can', 'etc', 'get', 'just', 'like',
 'lot', 'many', 'may', 'need', 'one', 's', 'set', 't',
 'time', 'us', 'use', 'way', 'well', 'will', 'b', 'e',
@@ -167,9 +174,9 @@ docs <- f.clean.corpus(docs)
 tdm.overall <- f.make.tdm(docs)
 ```
 
+#### Make a wordcloud of the whole corpus
 
-
-```{r, fig.height=6, fig.width=6, warning=FALSE, message=FALSE,echo=FALSE}
+```{r, fig.height=6, fig.width=6, warning=FALSE, message=FALSE}
 wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
           scale=c(5,0.8),
           max.words=200,
@@ -180,7 +187,10 @@ wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
           colors=brewer.pal(8,"Dark2"))
 ```
 
-### Now let's see the word clouds of different schools.
+#### Now let's see the word clouds of different schools.
+
+The method is similar to above. You can read the actual code in *../doc/Philosophy data story.Rmd*. 
+
 Capitalism:
 
 ```{r, warning=FALSE, message=FALSE,echo=FALSE}
@@ -378,7 +388,7 @@ wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
           colors=brewer.pal(9,"Blues"))
 ```
 
-stoicism:
+stoicism: Thou is an old-fashioned, poetic, or religious word for 'you' when you are talking to only one person. It is used as the subject of a verb. In rm_words, I include "you" as it is an insignificant word. But "thou" brings a specific context and style of a philosophy text.
 
 ```{r, warning=FALSE, message=FALSE,echo=FALSE}
 text.stoicism <- full_data %>% filter(school == "stoicism")
@@ -422,7 +432,7 @@ wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
           colors=brewer.pal(9,"Blues"))
 ```
 
-Nietzsche:
+Nietzsche: 
 
 ```{r, warning=FALSE, message=FALSE,echo=FALSE}
 text.nietzsche <- full_data %>% filter(school == "nietzsche")
@@ -466,13 +476,24 @@ wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
           colors=brewer.pal(9,"Blues"))
 ```
 
+From these wordclouds, you can find out what words are frequently mentioned in each school of philosophy. And you can imagine what topics they focus on. For my personal interest, I especially analyze the wordclouds of **capitalism** and **communism**. Many of us know they are contrast to some degree, but cannot state the differences clearly. I originally expected their wordclouds would be very different. However, both of them mentioned a lot about "value", "labour", "capital", "commodities", "price", "wages", "trade" etc.. The degree of similarity exceeded my expectation, and I began to speculate that they might often talk about similar topic but with contrast ideas. Here, we can refer to Adam Smith, the renowned Scottish Economist(on the side of capitalism), and Karl Marx, a famous Philosopher, and Sociologist, from Germany(on the side of communism), to see the difference of **capitalism** and **communism**:
 
+*"Capitalism is an economic system in which the trade and industry of the economy is owned and controlled by private individuals, to make profit."*
 
+*"Communism refers to social system in which country's trade and industry are controlled by the community and the share of each individual relies on his ability and needs."*
 
+For more detail, please refer to [Difference Between Capitalism and Communism](https://keydifferences.com/difference-between-capitalism-and-communism.html#:~:text=Capitalism%20is%20an%20economic%20system,on%20his%20ability%20and%20needs.) In part 2, we will do some sentiment analysis on these two schools of philosophy, and try to explore something interesting and uncovered by the above article.
 
-# Step : sentiment analysis on Capitalism and Communism
+# Part 2: Sentiment analysis on capitalism and communism
 
-```{r generate sentence.list, warning=FALSE, message=FALSE,echo=FALSE}
+During this part, we apply sentiment analysis using [NRC Word-Emotion Association Lexicon](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm). For each sentence, this method would give a score for each sentiment("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive") according to The NRC Emotion Lexicon, a list of English words and their associations with basic emotions. 
+
+## task 3 : Investigate and compare emotions between capitalism and communism
+
+#### generate sentence.list
+sentence.list is a subset of the whole corpus. It only includes sentences with school of capitalism or communism. And we will generat their sentiment score and append them on the right of the data set(12 columns: 10 columns of sentiment, 1 column of sentence id, 1 column of word count). It will cost 25-30 minutes to generate sentence.list, so I commented this r chunk and you can use it from *"../lib/wordcloudFuncs.R"*.
+
+```{r generate sentence.list, warning=FALSE, message=FALSE}
 # sentence.list=NULL
 # 
 # for(i in 1:nrow(data)){
@@ -500,14 +521,13 @@ wordcloud(tdm.overall$term, tdm.overall$`sum(count)`,
 ```
 
 
-
-
-
 ```{r, warning=FALSE, message=FALSE}
 names(sentence.list)
 ```
 
-## Emotionally charged sentences
+#### Find out emotionally charged sentences
+
+Here we can see some typical short sentences with strong sentiment.
 
 Capitalism:
 ```{r}
@@ -531,7 +551,9 @@ speech.df=as.data.frame(speech.df)
 as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
 ```
 
-## Clustering of emotions
+#### Clustering of emotions
+
+Here are the heatmaps of correlation matrix about sentiment respectively in capitalism and communism. Please note that the red regions means a strong positive correlation(close to but less or equal to 1) of two sentiment, blue regions means nearly no correlation(close to but more or equal to 0), and a white region shows some correlation.
 
 Capitalism:
 ```{r}
@@ -551,7 +573,11 @@ heatmap.2(cor(sentence.list%>%filter(school=="communism")%>%select(anger:positiv
 par(mar=c(4, 6, 2, 1))
 ```
 
+We see that for both school, their heatmap are very similar. It makes sense that most positive sentiments are uncorrelated with most negative sentiment. But it is hard to tell any significant difference between two schools. So, let's go with some more intuitionistic methods.
 
+#### Bar plot and Pie chart of emotions
+
+Here are the bar plot of mean score of each sentiment, and the pie chart of percentage of each sentiment. In the bar plot, all positive-related sentiments are in orange, and all negative-related sentiments are in their appropriate color.
 
 ```{r}
 sentence.list.capitalism <- sentence.list %>% filter(school=="capitalism")
@@ -628,7 +654,9 @@ ggplot(sentiment.df2, aes(x="", y=perc, fill=group)) +
   )
 ```
 
+These plots still looks similar, but now we can find some interesting pattern. In capitalism, **joy** is much higher than **fear**; but **joy** is lower than **fear** in communism. It looks like sentences in communism are more likely to express **fear** than in capitalism. However, is this the truth?
 
+Let's compare the mean sentiment score of capitalism and communism by combining the two bar plot. Here we find a really interesting point------ **fear** score is actually slightly higher in capitalism than in communism. So what happened? The truth is that sentences in capitalism are mostly more emotional than sentences in communism. The only exception is **disgust**. 
 
 
 ```{r}
@@ -651,9 +679,9 @@ g3 <- sentiment.df.all.long %>% ggplot(aes(x = group, y = value, fill = name)) +
 g3
 ```
 
+Just for your curious, I made a bar plot of mean sentiment score for each authors in capitalism and communism. It is really funny to see that Marx is such an impassive person.
 
-
-```{r}
+```{r, echo=FALSE}
 sentence.list.Marx <- sentence.list %>% filter(author=="Marx")
 emo.means.Marx=colMeans(select(sentence.list.Marx, anger:positive)>0.01)
 
@@ -693,5 +721,5 @@ g4
 
 ```
 
-
+That's all of the philosophy data story. I hope you have fun reading it!
 
